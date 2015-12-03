@@ -18,27 +18,48 @@ router.post('/log', function(req,res){
     sample request:
     {"device": "xyz", "access_time": "123", "app_name": "abc", "usetime": "1"}
   */
+ 
   if (!req.body) return res.sendStatus(400)
   var post_data = req.body;
   var deviceid = req.body.device;
   var accesstime = req.body.access_time;
   var appname = req.body.app_name;
   var use_time = req.body.usetime;
-  var filename = LOG_DIR + deviceid + ".csv"
+  var filename = LOG_DIR + deviceid.split(':').join('_') + ".csv"
   var csvStream = csv_writter.createWriteStream({headers: false}),
   writableStream = fs.createWriteStream(filename);
   
   writableStream.on("finish", function(){
     console.log("CSV File written! LogStash Crunching!");
+    res.sendStatus(200);
   });
   csvStream.pipe(writableStream);
   csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), usetime:use_time});
   csvStream.end()
+  
 });
 
 router.post('/logs', function(req,res){
-  res.render('index', { title: 'Multiple log Service!' });
+  if (!req.body) return res.sendStatus(400)
+  var post_data = req.body;
+  var status = false;  
+  post_data.forEach(function (item){
+    var deviceid = item.device;
+    var accesstime = item.access_time;
+    var appname = item.app_name;
+    var use_time = item.usetime;
+    var filename = LOG_DIR + deviceid.split(':').join('_')+ ".csv"
+    var csvStream = csv_writter.createWriteStream({headers: false}),
+    writableStream = fs.createWriteStream(filename);
+    csvStream.pipe(writableStream);
+    csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), usetime:use_time});
+    csvStream.end()
+    writableStream.on("finish", function(){
+      console.log("CSV File written for single, moving to next! LogStash Crunching!");
+      status = true;
+    }); 
+   });
+   if(status) return res.sendStatus(200);
 });
-
 
 module.exports = router;
