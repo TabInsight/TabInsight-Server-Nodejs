@@ -24,7 +24,7 @@ router.post('/log', function(req,res){
   var deviceid = req.body.device;
   var accesstime = req.body.access_time;
   var appname = req.body.app_name;
-  var use_time = req.body.usetime;
+  var use_time = req.body.use_time;
   var filename = LOG_DIR + deviceid.split(':').join('_') + ".csv"
   var csvStream = csv_writter.createWriteStream({headers: false}),
   writableStream = fs.createWriteStream(filename);
@@ -34,7 +34,7 @@ router.post('/log', function(req,res){
     res.sendStatus(200);
   });
   csvStream.pipe(writableStream);
-  csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), usetime:use_time});
+  csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
   csvStream.end()
   
 });
@@ -47,12 +47,12 @@ router.post('/logs', function(req,res){
     var deviceid = item.device;
     var accesstime = item.access_time;
     var appname = item.app_name;
-    var use_time = item.usetime;
+    var use_time = item.use_time;
     var filename = LOG_DIR + deviceid.split(':').join('_')+ ".csv"
     var csvStream = csv_writter.createWriteStream({headers: false}),
     writableStream = fs.createWriteStream(filename);
     csvStream.pipe(writableStream);
-    csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), usetime:use_time});
+    csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
     csvStream.end()
     writableStream.on("finish", function(){
       console.log("CSV File written for single, moving to next! LogStash Crunching!");
