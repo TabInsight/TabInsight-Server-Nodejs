@@ -18,7 +18,7 @@ router.post('/log', function(req,res){
     sample request:
     {"device": "xyz", "access_time": "123", "app_name": "abc", "usetime": "1"}
   */
- 
+
   if (!req.body) return res.sendStatus(400)
   var post_data = req.body;
   var deviceid = req.body.device;
@@ -28,7 +28,7 @@ router.post('/log', function(req,res){
   var filename = LOG_DIR + deviceid.split(':').join('_') + ".csv"
   var csvStream = csv_writter.createWriteStream({headers: false}),
   writableStream = fs.createWriteStream(filename);
-  
+
   writableStream.on("finish", function(){
     console.log("CSV File written! LogStash Crunching!");
     res.sendStatus(200);
@@ -36,30 +36,34 @@ router.post('/log', function(req,res){
   csvStream.pipe(writableStream);
   csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
   csvStream.end()
-  
+
 });
 
 router.post('/logs', function(req,res){
   if (!req.body) return res.sendStatus(400)
   var post_data = req.body;
-  var status = false;  
+  var status = false;
+
+  var filename = LOG_DIR + req.body[0].device.split(':').join('_')+ ".csv"
+  var csvStream = csv_writter.createWriteStream({headers: false}),
+  writableStream = fs.createWriteStream(filename);
+  csvStream.pipe(writableStream);
+
   post_data.forEach(function (item){
+    console.log(item);
     var deviceid = item.device;
     var accesstime = item.access_time;
     var appname = item.app_name;
     var use_time = item.use_time;
-    var filename = LOG_DIR + deviceid.split(':').join('_')+ ".csv"
-    var csvStream = csv_writter.createWriteStream({headers: false}),
-    writableStream = fs.createWriteStream(filename);
-    csvStream.pipe(writableStream);
+
     csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
-    csvStream.end()
-    writableStream.on("finish", function(){
-      console.log("CSV File written for single, moving to next! LogStash Crunching!");
-      status = true;
-    }); 
    });
-   if(status) return res.sendStatus(200);
+
+   csvStream.end();
+   writableStream.on("finish", function(){
+     console.log("CSV File written! LogStash Crunching!");
+     return res.sendStatus(200);
+   });
 });
 
 module.exports = router;
