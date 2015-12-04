@@ -17,8 +17,8 @@ cd /opt/tabinsight-server-v2/app
 npm install
 
 #setting up forever to keep the app running
-forever start /opt/tabinsight-server-v2/app/app.js
+forever start  /opt/tabinsight-server-v2/app/bin/www
 #forever stop /opt/tabinsight-server-v2/app/app.js
 sudo touch /etc/init/tabinsight-server-v2.conf
 sudo echo "start on startup" >>/etc/init/tabinsight-server-v2.conf
-sudo echo "/opt/tabinsight-server-v2/app/app.js" >>/etc/init/tabinsight-server-v2.conf
+sudo echo "/opt/tabinsight-server-v2/app/bin/www" >>/etc/init/tabinsight-server-v2.conf
