@@ -23,7 +23,7 @@ router.post('/log', function(req,res){
   if (!req.body) return res.sendStatus(400)
   var post_data = req.body;
   var deviceid = req.body.device;
-  var accesstime = new Date(Number(req.body.access_time * 1000));
+  var accesstime = new Date(Number(req.body.access_time));
   var appname = req.body.app_name;
   var use_time = Number(req.body.use_time);
 
