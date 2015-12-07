@@ -7,17 +7,21 @@ var client = {
     return getIndexNameFunc();
   },
 
-  insertRecord: function(payload){
+  insertRecord: function(payload, response){
     var client = request.createClient(config.host);
     url = getIndexNameFunc() + "/record/"
-    client.post(url, payload, function(err, res, body) {
+    return client.post(url, payload, function(err, res, body) {
       if(err){
         console.log(err);
+        response.statusCode = "400"
+        return response.json({ message: "Failed to write to elastic search "
+                        });
       }
       console.log(res);
-      return res;
+      response.statusCode = "201"
+      return response.json({ message: "Record creation succeeded"
+                      });
     });
-    console.log(url);
   }
 };
 

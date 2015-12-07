@@ -34,8 +34,7 @@ router.post('/log', function(req,res){
     "use_time": use_time
   }
   inserRecordFunc = es_client.insertRecord;
-  return inserRecordFunc(payload);
-
+  return inserRecordFunc(payload, res);
 });
 
 router.post('/logs', function(req,res){
