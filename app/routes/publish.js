@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var csv_writter = require("fast-csv");
 var fs  = require('fs');
+var es_client = require("../lib/elasticsearchClient");
 var LOG_DIR = '/var/tabinsight/data/'
 
 function createLogFile(){
@@ -16,27 +17,24 @@ router.get('/', function(req, res) {
 router.post('/log', function(req,res){
   /*
     sample request:
-    {"device": "xyz", "access_time": "123", "app_name": "abc", "usetime": "1"}
+    {"device": "xyz", "access_time": "123", "app_name": "abc", "use_time": "1"}
   */
 
   if (!req.body) return res.sendStatus(400)
   var post_data = req.body;
   var deviceid = req.body.device;
-  var accesstime = req.body.access_time;
+  var accesstime = new Date(Number(req.body.access_time * 1000));
   var appname = req.body.app_name;
-  var use_time = req.body.use_time;
-  var filename = LOG_DIR + deviceid.split(':').join('_') + ".csv"
-  var csvStream = csv_writter.createWriteStream({headers: false}),
-  writableStream = fs.createWriteStream(filename);
+  var use_time = Number(req.body.use_time);
 
-  writableStream.on("finish", function(){
-    console.log("CSV File written! LogStash Crunching!");
-    res.sendStatus(200);
-  });
-  csvStream.pipe(writableStream);
-  csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
-  csvStream.end()
-
+  var payload = {
+    "device" : deviceid,
+    "app_name": appname,
+    "access_time": accesstime,
+    "use_time": use_time
+  }
+  inserRecordFunc = es_client.insertRecord;
+  return inserRecordFunc(payload, res);
 });
 
 router.post('/logs', function(req,res){
@@ -52,9 +50,9 @@ router.post('/logs', function(req,res){
   post_data.forEach(function (item){
     console.log(item);
     var deviceid = item.device;
-    var accesstime = item.access_time;
+    var accesstime = Number(item.access_time);
     var appname = item.app_name;
-    var use_time = item.use_time;
+    var use_time = Number(item.use_time);
 
     csvStream.write({device: deviceid, access_time: accesstime, app_name: appname.split(' ').join('_'), use_time:use_time});
    });
